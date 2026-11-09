@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+
+
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "TravelaiagentbackendApplication",
+            "request": "launch",
+            "mainClass": "com.travelai.agent.backend.travelaiagentbackend.TravelaiagentbackendApplication",
+            "projectName": "travelaiagentbackend",
+            "env": {
+                "OPENAI_API_KEY": "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",
+                "CHAT_MODEL": "gpt-4o-mini",
+                "SERPAPI_API_KEY": "64aad73105efea8b3ce0781b211de6366e52c58e0d73971a0e12e1f08049c7d0"
+            }
+        }
+    ]
+}

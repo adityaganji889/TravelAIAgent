@@ -1,0 +1,17 @@
+server:
+    port: 8081
+
+spring:
+    application:
+        name: travelaiagentbackend
+    ai:
+        openai:
+            api-key: ${OPENAI_API_KEY:default-key} 
+            chat:
+                model: ${CHAT_MODEL:gpt-4o-mini}
+
+app:
+    serpapi:
+        api:
+            url: https://serpapi.com/search.json
+            key: ${SERPAPI_API_KEY}

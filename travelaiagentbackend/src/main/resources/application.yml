@@ -14,4 +14,4 @@ app:
     serpapi:
         api:
             url: https://serpapi.com/search.json
-            key: ${SERPAPI_API_KEY}
+            key: ${SERPAPI_API_KEY:}

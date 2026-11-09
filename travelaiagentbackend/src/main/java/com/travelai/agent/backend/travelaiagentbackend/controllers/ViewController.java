@@ -1,4 +1,4 @@
-package com.travelai.agent.backend.controllers;
+package com.travelai.agent.backend.travelaiagentbackend.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

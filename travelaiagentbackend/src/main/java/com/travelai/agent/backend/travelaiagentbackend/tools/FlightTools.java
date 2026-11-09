@@ -1,4 +1,4 @@
-package com.travelai.agent.backend.tools;
+package com.travelai.agent.backend.travelaiagentbackend.tools;
 
 import java.util.ArrayList;
 import java.util.List;

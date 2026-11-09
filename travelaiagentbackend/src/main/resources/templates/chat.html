@@ -3,192 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classic Chat Assistant</title>
-    <!-- Tailwind CSS v4 -->
+    <title>Travel AI Agent</title>
+
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <!-- Google Fonts: Playfair Display & Inter -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Marked.js for Markdown parsing -->
+
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Tailwind CSS v4 class-based dark mode variant configuration -->
+
     <style type="text/tailwindcss">
         @variant dark (&:where(.dark, .dark *));
     </style>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
+
         .serif-font {
             font-family: 'Playfair Display', Georgia, serif;
         }
+
         .code-font {
             font-family: 'JetBrains Mono', monospace;
         }
-        /* Custom scrollbar styling for a cleaner look */
+
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background-color: rgba(156, 163, 175, 0.3);
             border-radius: 3px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background-color: rgba(156, 163, 175, 0.5);
         }
+
+        .suggestion-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .suggestion-btn {
+            transition: all 0.2s ease;
+        }
+
+        .travel-gradient {
+            background: linear-gradient(135deg, #047857, #0d9488);
+        }
+
+        .dark .travel-gradient {
+            background: linear-gradient(135deg, #065f46, #0f766e);
+        }
+
+        .message-content h1,
+        .message-content h2,
+        .message-content h3 {
+            font-weight: 700;
+            margin-top: 12px;
+            margin-bottom: 8px;
+        }
+
+        .message-content a {
+            color: #0d9488;
+            text-decoration: underline;
+        }
+
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+        }
+
+        .message-content th,
+        .message-content td {
+            border: 1px solid #d6d3d1;
+            padding: 8px;
+            text-align: left;
+        }
     </style>
 </head>
+
 <body class="bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Top Navigation / Header -->
-    <header class="border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
+    <!-- Header -->
+    <header class="border-b border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md sticky top-0 z-50">
+
         <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-stone-900 dark:bg-stone-100 flex items-center justify-center text-white dark:text-stone-900 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25" />
+
+                <div class="w-11 h-11 rounded-xl travel-gradient flex items-center justify-center text-white shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         fill="none" viewBox="0 0 24 24"
+                         stroke-width="1.7" stroke="currentColor"
+                         class="w-6 h-6">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M2.25 19.5l19.5-7.5-19.5-7.5 3.75 7.5-3.75 7.5zM6 12h15.75"/>
                     </svg>
                 </div>
+
                 <div>
-                    <h1 class="serif-font text-xl font-bold tracking-tight text-stone-900 dark:text-white">Classic Chat</h1>
-                    <p class="text-xs text-stone-500 dark:text-stone-400 font-medium">Spring AI &amp; Thymeleaf Demo</p>
+                    <h1 class="serif-font text-xl font-bold tracking-tight text-stone-900 dark:text-white">
+                        Travel AI Agent
+                    </h1>
+
+                    <p class="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                        Your Personal AI Travel Companion
+                    </p>
                 </div>
+
             </div>
+
             <div class="flex items-center gap-3">
-                <!-- Theme Toggle Button -->
-                <button id="themeToggleBtn" class="p-2 rounded-lg border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-200 cursor-pointer" title="Toggle Theme">
-                    <!-- Sun Icon (Visible in Dark Mode) -->
-                    <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn"
+                        class="p-2 rounded-lg border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
+                        title="Toggle Theme">
+
+                    <svg id="sunIcon" class="w-5 h-5 hidden"
+                         fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
                     </svg>
-                    <!-- Moon Icon (Visible in Light Mode) -->
-                    <svg id="moonIcon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+
+                    <svg id="moonIcon" class="w-5 h-5"
+                         fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
+
                 </button>
-                <button id="clearChatBtn" class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-stone-800 hover:border-stone-400 dark:hover:border-stone-600 px-3 py-1.5 rounded transition-all duration-200 cursor-pointer">
-                    Clear History
+
+                <button id="clearChatBtn"
+                        class="text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 hover:text-teal-700 dark:hover:text-teal-400 border border-stone-200 dark:border-stone-800 px-3 py-2 rounded-lg transition-all cursor-pointer">
+                    Clear Chat
                 </button>
-                <div class="flex items-center gap-1.5">
+
+                <div class="hidden sm:flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">Online</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">
+                        Online
+                    </span>
                 </div>
+
             </div>
         </div>
     </header>
 
+
     <!-- Main Container -->
     <main class="flex-1 max-w-5xl w-full mx-auto px-4 md:px-6 py-6 flex flex-col justify-between overflow-hidden">
-        <!-- Chat History Wrapper -->
-        <div class="flex-1 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-sm flex flex-col overflow-hidden h-[calc(100vh-14rem)] transition-colors duration-300">
-            
-            <!-- Welcome Info / Initial State -->
-            <div id="welcomeScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-md mx-auto">
-                <div class="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300 mb-4 border border-stone-200 dark:border-stone-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+
+        <div class="flex-1 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[calc(100vh-14rem)] transition-colors duration-300">
+
+            <!-- Welcome Screen -->
+            <div id="welcomeScreen"
+                 class="flex-1 flex flex-col items-center justify-center p-6 md:p-8 text-center max-w-2xl mx-auto w-full">
+
+                <div class="w-20 h-20 rounded-2xl travel-gradient flex items-center justify-center text-white mb-5 shadow-lg">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         fill="none" viewBox="0 0 24 24"
+                         stroke-width="1.5" stroke="currentColor"
+                         class="w-10 h-10">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 21s8.25-4.5 8.25-11.25a8.25 8.25 0 10-16.5 0C3.75 16.5 12 21 12 21z"/>
+                        <circle cx="12" cy="9.75" r="2.5"/>
                     </svg>
+
                 </div>
-                <h2 class="serif-font text-2xl font-semibold text-stone-900 dark:text-white mb-2">Welcome to Classic Chat</h2>
-                <p class="text-sm text-stone-500 dark:text-stone-400 mb-6">A refined interface powered by Spring AI. Start a conversation below to begin.</p>
-                <div class="grid grid-cols-2 gap-3 w-full text-left">
-                    <button class="suggestion-btn text-xs p-3 border border-stone-200 dark:border-stone-850 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 hover:border-stone-400 dark:hover:border-stone-600 transition-all duration-200 text-left">
-                        <span class="font-semibold text-stone-900 dark:text-white block mb-1">Explain Recursion</span>
-                        Define it simply with a real-life analogy.
+
+                <p class="text-xs uppercase tracking-[0.25em] font-semibold text-emerald-600 dark:text-emerald-400 mb-3">
+                    Explore · Discover · Experience
+                </p>
+
+                <h2 class="serif-font text-3xl md:text-4xl font-semibold text-stone-900 dark:text-white mb-3">
+                    Where would you like to go?
+                </h2>
+
+                <p class="text-sm md:text-base text-stone-500 dark:text-stone-400 mb-8 max-w-lg leading-relaxed">
+                    Your personal AI travel assistant is here to help you discover destinations, plan unforgettable trips, create itineraries, and explore the world.
+                </p>
+
+                <!-- Suggestion Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
+
+                    <button class="suggestion-btn text-left p-4 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-emerald-50 dark:hover:bg-stone-800 hover:border-emerald-300 dark:hover:border-emerald-800 transition-all suggestion-btn">
+
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl">🌍</span>
+                            <span class="font-semibold text-sm text-stone-900 dark:text-white">
+                                Discover Destinations
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-stone-500 dark:text-stone-400">
+                            Suggest amazing places to visit based on my interests.
+                        </p>
+
                     </button>
-                    <button class="suggestion-btn text-xs p-3 border border-stone-200 dark:border-stone-850 rounded-lg text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 hover:border-stone-400 dark:hover:border-stone-600 transition-all duration-200 text-left">
-                        <span class="font-semibold text-stone-900 dark:text-white block mb-1">Write a Poem</span>
-                        Create a short classic poem about rain.
+
+
+                    <button class="suggestion-btn text-left p-4 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-emerald-50 dark:hover:bg-stone-800 hover:border-emerald-300 dark:hover:border-emerald-800 transition-all">
+
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl">🗺️</span>
+                            <span class="font-semibold text-sm text-stone-900 dark:text-white">
+                                Plan My Trip
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-stone-500 dark:text-stone-400">
+                            Create a personalized travel itinerary for my vacation.
+                        </p>
+
                     </button>
+
+
+                    <button class="suggestion-btn text-left p-4 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-emerald-50 dark:hover:bg-stone-800 hover:border-emerald-300 dark:hover:border-emerald-800 transition-all">
+
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl">💰</span>
+                            <span class="font-semibold text-sm text-stone-900 dark:text-white">
+                                Travel Budget
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-stone-500 dark:text-stone-400">
+                            Estimate travel expenses and find budget-friendly options.
+                        </p>
+
+                    </button>
+
+
+                    <button class="suggestion-btn text-left p-4 border border-stone-200 dark:border-stone-800 rounded-xl hover:bg-emerald-50 dark:hover:bg-stone-800 hover:border-emerald-300 dark:hover:border-emerald-800 transition-all">
+
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-xl">🏨</span>
+                            <span class="font-semibold text-sm text-stone-900 dark:text-white">
+                                Hotels & Experiences
+                            </span>
+                        </div>
+
+                        <p class="text-xs text-stone-500 dark:text-stone-400">
+                            Find accommodation and exciting things to do.
+                        </p>
+
+                    </button>
+
                 </div>
+
+                <p class="mt-7 text-xs text-stone-400 dark:text-stone-500">
+                    ✨ Powered by Spring AI
+                </p>
+
             </div>
 
-            <!-- Messages List -->
-            <div id="messageContainer" class="hidden flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                <!-- Messages will be injected here dynamically -->
+
+            <!-- Messages -->
+            <div id="messageContainer"
+                 class="hidden flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
             </div>
 
-            <!-- Typing Indicator (Hidden by default) -->
-            <div id="typingIndicator" class="hidden px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-xs text-stone-500 dark:text-stone-300 font-semibold select-none">
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator"
+                 class="hidden px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 flex items-center gap-3">
+
+                <div class="w-9 h-9 rounded-full travel-gradient flex items-center justify-center text-white text-xs font-semibold">
                     AI
                 </div>
-                <div class="flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-stone-400 dark:bg-stone-500 animate-bounce" style="animation-delay: 0ms"></span>
-                    <span class="w-2 h-2 rounded-full bg-stone-400 dark:bg-stone-500 animate-bounce" style="animation-delay: 150ms"></span>
-                    <span class="w-2 h-2 rounded-full bg-stone-400 dark:bg-stone-500 animate-bounce" style="animation-delay: 300ms"></span>
+
+                <div>
+                    <p class="text-xs text-stone-500 dark:text-stone-400 mb-1">
+                        Travel AI is planning your journey
+                    </p>
+
+                    <div class="flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-bounce"></span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style="animation-delay:150ms"></span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style="animation-delay:300ms"></span>
+                    </div>
                 </div>
+
             </div>
+
 
             <!-- Input Area -->
             <div class="border-t border-stone-200 dark:border-stone-800 p-4 bg-stone-50/70 dark:bg-stone-900/70 backdrop-blur-sm">
+
                 <form id="chatForm" class="flex gap-3 items-end">
-                    <textarea 
-                        id="userInput" 
-                        placeholder="Type a message or instruction... (Enter to send, Shift+Enter for new line)" 
+
+                    <textarea
+                        id="userInput"
+                        placeholder="Ask me anything about your next adventure..."
                         rows="1"
-                        class="flex-1 bg-white dark:bg-stone-950 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-800 focus:border-stone-950 dark:focus:border-stone-100 rounded-lg px-4 py-2.5 text-sm shadow-inner transition-all duration-200 outline-none resize-none min-h-[42px] max-h-[160px] custom-scrollbar"
+                        class="flex-1 bg-white dark:bg-stone-950 text-stone-900 dark:text-stone-100 border border-stone-300 dark:border-stone-800 focus:border-emerald-600 dark:focus:border-emerald-500 rounded-xl px-4 py-3 text-sm shadow-inner transition-all outline-none resize-none min-h-[46px] max-h-[160px] custom-scrollbar"
                     ></textarea>
-                    <button 
-                        type="submit" 
-                        class="bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 text-sm font-medium px-5 py-2.5 rounded-lg shadow-sm hover:shadow transition-all duration-200 flex items-center gap-2 cursor-pointer h-[42px]"
+
+                    <button
+                        type="submit"
+                        class="travel-gradient hover:opacity-90 text-white text-sm font-semibold px-5 py-3 rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer h-[46px]"
                     >
                         <span>Send</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             fill="none" viewBox="0 0 24 24"
+                             stroke-width="2" stroke="currentColor"
+                             class="w-4 h-4">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
                         </svg>
+
                     </button>
+
                 </form>
+
+                <p class="text-center text-[10px] text-stone-400 dark:text-stone-500 mt-2">
+                    Travel ideas and recommendations powered by AI · Verify bookings and travel requirements before departure.
+                </p>
+
             </div>
+
         </div>
     </main>
 
-    <!-- Custom JavaScript -->
+
+    <!-- JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
             const chatForm = document.getElementById('chatForm');
             const userInput = document.getElementById('userInput');
             const messageContainer = document.getElementById('messageContainer');
             const welcomeScreen = document.getElementById('welcomeScreen');
             const typingIndicator = document.getElementById('typingIndicator');
+
             const clearChatBtn = document.getElementById('clearChatBtn');
             const themeToggleBtn = document.getElementById('themeToggleBtn');
+
             const sunIcon = document.getElementById('sunIcon');
             const moonIcon = document.getElementById('moonIcon');
+
             const suggestionBtns = document.querySelectorAll('.suggestion-btn');
 
-            // Configure Marked.js options
             marked.setOptions({
                 breaks: true,
                 gfm: true
             });
 
-            // Initialize Dark Mode state from localStorage or system theme preferences
+            // Theme initialization
             const savedTheme = localStorage.getItem('theme');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
+
             if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
                 enableDarkMode(true);
             } else {
                 enableDarkMode(false);
             }
 
-            // Theme toggle listener
             themeToggleBtn.addEventListener('click', () => {
                 const isDark = document.documentElement.classList.contains('dark');
                 enableDarkMode(!isDark);
             });
 
             function enableDarkMode(shouldDark) {
+
                 if (shouldDark) {
                     document.documentElement.classList.add('dark');
                     sunIcon.classList.remove('hidden');
                     moonIcon.classList.add('hidden');
                     localStorage.setItem('theme', 'dark');
+
                 } else {
                     document.documentElement.classList.remove('dark');
                     sunIcon.classList.add('hidden');
@@ -197,105 +399,160 @@
                 }
             }
 
-            // Auto-resize textarea logic
+
+            // Textarea auto resize
             userInput.addEventListener('input', function() {
                 this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+                this.style.height = this.scrollHeight + 'px';
             });
 
-            // Handle keyboard event on textarea (Enter to send, Shift+Enter for new line)
+
+            // Enter to send
             userInput.addEventListener('keydown', (e) => {
+
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    chatForm.dispatchEvent(new Event('submit'));
+                    chatForm.requestSubmit();
                 }
+
             });
 
-            // Helper to generate a unique UUID for conversation sessions
+
+            // Generate UUID
             function generateUUID() {
                 return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+
                     const r = Math.random() * 16 | 0;
                     const v = c === 'x' ? r : (r & 0x3 | 0x8);
+
                     return v.toString(16);
+
                 });
             }
 
-            // Initialize or retrieve conversation session ID
+
+            // Conversation ID
             let conversationId = localStorage.getItem('classic_chat_conversation_id');
+
             if (!conversationId) {
                 conversationId = generateUUID();
                 localStorage.setItem('classic_chat_conversation_id', conversationId);
             }
 
-            // Initialize chat history array in local storage
-            let chatHistory = JSON.parse(localStorage.getItem('classic_chat_history') || '[]');
 
-            // Render existing history on load
+            // Chat history
+            let chatHistory = JSON.parse(
+                localStorage.getItem('classic_chat_history') || '[]'
+            );
+
+
+            // Render existing messages
             if (chatHistory.length > 0) {
+
                 welcomeScreen.classList.add('hidden');
                 messageContainer.classList.remove('hidden');
-                chatHistory.forEach(msg => appendMessage(msg.role, msg.content, false));
+
+                chatHistory.forEach(msg => {
+                    appendMessage(msg.role, msg.content, false);
+                });
+
                 scrollToBottom();
             }
 
-            // Form Submit handler
+
+            // Submit form
             chatForm.addEventListener('submit', async (e) => {
+
                 e.preventDefault();
+
                 const text = userInput.value.trim();
+
                 if (!text) return;
 
-                // Clear input and reset textarea height
                 userInput.value = '';
                 userInput.style.height = 'auto';
-                sendMessage(text);
+
+                await sendMessage(text);
+
             });
 
-            // Suggestion buttons click handler
+
+            // Suggestion buttons
             suggestionBtns.forEach(btn => {
+
                 btn.addEventListener('click', () => {
-                    const title = btn.querySelector('span').innerText;
-                    sendMessage(title);
+
+                    const title = btn.querySelector('span:last-child').innerText;
+                    const description = btn.querySelector('p').innerText;
+
+                    sendMessage(title + ': ' + description);
+
                 });
+
             });
 
-            // Clear chat handler
+
+            // Clear chat
             clearChatBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to clear your chat history?')) {
+
+                if (confirm('Are you sure you want to clear your travel conversation?')) {
+
                     chatHistory = [];
+
                     localStorage.removeItem('classic_chat_history');
-                    // Reset backend context by generating a new session ID
+
                     conversationId = generateUUID();
-                    localStorage.setItem('classic_chat_conversation_id', conversationId);
+
+                    localStorage.setItem(
+                        'classic_chat_conversation_id',
+                        conversationId
+                    );
+
                     messageContainer.innerHTML = '';
+
                     messageContainer.classList.add('hidden');
+
                     welcomeScreen.classList.remove('hidden');
+
                 }
+
             });
 
-            // Send message function
+
+            // Send message
             async function sendMessage(text) {
-                // Add user message to UI and history
+
                 appendMessage('user', text);
-                chatHistory.push({ role: 'user', content: text });
+
+                chatHistory.push({
+                    role: 'user',
+                    content: text
+                });
+
                 saveHistory();
 
-                // Hide welcome screen if first message
                 welcomeScreen.classList.add('hidden');
                 messageContainer.classList.remove('hidden');
+
                 scrollToBottom();
 
-                // Show typing indicator
                 typingIndicator.classList.remove('hidden');
+
                 scrollToBottom();
 
                 try {
+
                     const response = await fetch('/chat', {
+
                         method: 'POST',
+
                         headers: {
                             'Content-Type': 'text/plain',
                             'Conversation-Id': conversationId
                         },
+
                         body: text
+
                     });
 
                     if (!response.ok) {
@@ -304,94 +561,181 @@
 
                     const reply = await response.text();
 
-                    // Hide typing indicator
                     typingIndicator.classList.add('hidden');
 
-                    // Append bot message to UI and history
                     appendMessage('assistant', reply);
-                    chatHistory.push({ role: 'assistant', content: reply });
+
+                    chatHistory.push({
+                        role: 'assistant',
+                        content: reply
+                    });
+
                     saveHistory();
+
                     scrollToBottom();
+
                 } catch (error) {
-                    console.error('Error contacting chat API:', error);
+
+                    console.error('Error contacting travel API:', error);
+
                     typingIndicator.classList.add('hidden');
-                    appendMessage('system', 'Sorry, I encountered an error communicating with the chat service.');
+
+                    appendMessage(
+                        'system',
+                        'Sorry, I could not connect to the Travel AI service. Please try again.'
+                    );
+
                     scrollToBottom();
+
                 }
+
             }
 
-            // Append message to DOM
+
+            // Append message
             function appendMessage(role, content, animate = true) {
+
                 const messageWrapper = document.createElement('div');
-                messageWrapper.className = `flex gap-3 max-w-[85%] ${role === 'user' ? 'ml-auto flex-row-reverse' : ''}`;
+
+                messageWrapper.className =
+                    `flex gap-3 max-w-[90%] ${
+                        role === 'user' ? 'ml-auto flex-row-reverse' : ''
+                    }`;
+
                 if (animate) {
-                    messageWrapper.className += ' transition-all duration-300 opacity-0 translate-y-2';
+                    messageWrapper.className +=
+                        ' transition-all duration-300 opacity-0 translate-y-2';
                 }
+
 
                 // Avatar
                 const avatar = document.createElement('div');
-                avatar.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold select-none flex-shrink-0 ${
-                    role === 'user' 
-                        ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900' 
-                        : role === 'system'
-                        ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200'
-                        : 'bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
-                }`;
-                avatar.innerText = role === 'user' ? 'U' : role === 'system' ? '!' : 'AI';
 
-                // Content Bubble
+                avatar.className =
+                    `w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold select-none flex-shrink-0 ${
+                        role === 'user'
+                            ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900'
+                            : role === 'system'
+                            ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200'
+                            : 'travel-gradient text-white'
+                    }`;
+
+                avatar.innerText =
+                    role === 'user' ? 'U' :
+                    role === 'system' ? '!' : 'AI';
+
+
+                // Message bubble
                 const bubble = document.createElement('div');
-                bubble.className = `p-3.5 rounded-xl text-sm leading-relaxed ${
-                    role === 'user' 
-                        ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-sm' 
-                        : role === 'system'
-                        ? 'bg-rose-50 text-rose-800 border border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-200'
-                        : 'bg-stone-50 border border-stone-200 text-stone-800 dark:bg-stone-900 dark:border-stone-800 dark:text-stone-200 shadow-xs'
-                }`;
 
-                // Parse Markdown content for AI
+                bubble.className =
+                    `message-content p-4 rounded-xl text-sm leading-relaxed overflow-hidden ${
+                        role === 'user'
+                            ? 'bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-sm'
+                            : role === 'system'
+                            ? 'bg-rose-50 text-rose-800 border border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/40 dark:text-rose-200'
+                            : 'bg-stone-50 border border-stone-200 text-stone-800 dark:bg-stone-900 dark:border-stone-800 dark:text-stone-200 shadow-sm'
+                    }`;
+
+
+                // Render assistant Markdown safely
                 if (role === 'assistant') {
-                    bubble.innerHTML = marked.parse(content);
-                    // Add Tailwind styles to parsed elements inside AI responses
+
+                    const html = marked.parse(content);
+
+                    bubble.innerHTML = html;
+
+                    // Basic styling for Markdown
                     bubble.querySelectorAll('pre').forEach(pre => {
-                        pre.className = 'bg-stone-100 dark:bg-stone-950 text-stone-900 dark:text-stone-100 p-3 rounded-lg overflow-x-auto code-font my-2.5 border border-stone-200 dark:border-stone-800';
+                        pre.className =
+                            'bg-stone-100 dark:bg-stone-950 text-stone-900 dark:text-stone-100 p-3 rounded-lg overflow-x-auto code-font my-2.5 border border-stone-200 dark:border-stone-800';
                     });
+
                     bubble.querySelectorAll('code:not(pre code)').forEach(code => {
-                        code.className = 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-1.5 py-0.5 rounded code-font text-xs font-semibold';
+                        code.className =
+                            'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 px-1.5 py-0.5 rounded code-font text-xs font-semibold';
                     });
+
                     bubble.querySelectorAll('ul').forEach(ul => {
                         ul.className = 'list-disc pl-5 my-2 space-y-1';
                     });
+
                     bubble.querySelectorAll('ol').forEach(ol => {
                         ol.className = 'list-decimal pl-5 my-2 space-y-1';
                     });
+
                     bubble.querySelectorAll('p').forEach(p => {
                         p.className = 'mb-2 last:mb-0';
                     });
+
+                    // Prevent unsafe links
+                    bubble.querySelectorAll('a').forEach(a => {
+                        try {
+                            const url = new URL(a.href, window.location.origin);
+
+                            if (!['http:', 'https:'].includes(url.protocol)) {
+                                a.removeAttribute('href');
+                                return;
+                            }
+
+                            a.target = '_blank';
+                            a.rel = 'noopener noreferrer';
+
+                        } catch {
+                            a.removeAttribute('href');
+                        }
+                    });
+
                 } else {
+
                     bubble.innerText = content;
+
                 }
+
 
                 messageWrapper.appendChild(avatar);
                 messageWrapper.appendChild(bubble);
+
                 messageContainer.appendChild(messageWrapper);
 
+
                 if (animate) {
-                    // Trigger reflow for animation
+
                     setTimeout(() => {
-                        messageWrapper.classList.remove('opacity-0', 'translate-y-2');
+
+                        messageWrapper.classList.remove(
+                            'opacity-0',
+                            'translate-y-2'
+                        );
+
                     }, 50);
+
                 }
+
             }
 
+
+            // Save chat history
             function saveHistory() {
-                localStorage.setItem('classic_chat_history', JSON.stringify(chatHistory));
+
+                localStorage.setItem(
+                    'classic_chat_history',
+                    JSON.stringify(chatHistory)
+                );
+
             }
 
+
+            // Scroll to bottom
             function scrollToBottom() {
-                messageContainer.scrollTop = messageContainer.scrollHeight;
+
+                messageContainer.scrollTop =
+                    messageContainer.scrollHeight;
+
             }
+
         });
     </script>
+
 </body>
 </html>

@@ -1,5 +1,5 @@
 
-package com.travelai.agent.backend.tools;
+package com.travelai.agent.backend.travelaiagentbackend.tools;
 
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;

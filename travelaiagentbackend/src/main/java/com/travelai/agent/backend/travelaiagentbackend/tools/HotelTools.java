@@ -3,25 +3,39 @@ package com.travelai.agent.backend.travelaiagentbackend.tools;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.JsonNode;
+// import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 @Component
 public class HotelTools {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(HotelTools.class);
 
     private final RestTemplate restTemplate;
     private final String apiKey;
     private final String apiUrl;
 
+    // Input format: 11-Nov-2026
     private static final DateTimeFormatter INPUT_FORMAT =
             DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH);
+
+    // SerpAPI format: 2026-11-11
+    private static final DateTimeFormatter API_FORMAT =
+            DateTimeFormatter.ISO_LOCAL_DATE;
 
     public HotelTools(
             RestTemplate restTemplate,
@@ -33,27 +47,53 @@ public class HotelTools {
         this.apiUrl = apiUrl;
     }
 
+    // Convert DD-MMM-YYYY to YYYY-MM-DD
     private String convertDate(String date) {
-        return LocalDate.parse(date, INPUT_FORMAT)
-                .format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        if (date == null || date.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Date cannot be empty.");
+        }
+
+        try {
+
+            return LocalDate.parse(
+                    date.trim(), INPUT_FORMAT)
+                    .format(API_FORMAT);
+
+        } catch (DateTimeParseException e) {
+
+            throw new IllegalArgumentException(
+                    "Invalid date: " + date
+                    + ". Please use DD-MMM-YYYY format, e.g. 11-Nov-2026.");
+        }
     }
 
+    // Search Hotels
     @Tool(
         name = "searchHotels",
         description = """
-            Search hotels and room rates for a particular destination.
+            Search available hotels and room rates using SerpAPI Google Hotels.
 
             Parameters:
-            - location: City or destination.
-            - checkInDate: DD-MMM-YYYY format.
-            - checkOutDate: DD-MMM-YYYY format.
+            - location: City or destination, e.g. New Delhi.
+            - checkInDate: Check-in date in DD-MMM-YYYY format.
+            - checkOutDate: Check-out date in DD-MMM-YYYY format.
             - adults: Number of adult guests.
 
-            Return hotel names, ratings, nightly prices, total stay
-            prices, addresses, room availability information and
-            booking links when provided.
+            Returns:
+            - Hotel names and addresses.
+            - Hotel ratings.
+            - Price per night.
+            - Total stay price.
+            - Booking providers and booking links when available.
+            - Amenities when available.
 
-            Always use the requested dates and number of adults.
+            IMPORTANT:
+            - Always use the exact dates requested by the user.
+            - Always use the requested number of adults.
+            - Never fabricate hotel prices or availability.
+            - Do not claim a hotel is available unless the API returns it.
             """
     )
     public String searchHotels(
@@ -64,26 +104,58 @@ public class HotelTools {
 
         try {
 
-            LocalDate checkIn = LocalDate.parse(
-                    checkInDate, INPUT_FORMAT);
+            logger.info(
+                    "Hotel search started: {}, check-in: {}, check-out: {}, adults: {}",
+                    location, checkInDate, checkOutDate, adults);
 
-            LocalDate checkOut = LocalDate.parse(
-                    checkOutDate, INPUT_FORMAT);
-
-            if (!checkOut.isAfter(checkIn)) {
-                return "Check-out date must be after check-in date.";
+            // Validate location
+            if (location == null || location.isBlank()) {
+                return "Please provide a valid hotel location.";
             }
 
+            // Validate adults
             if (adults < 1) {
                 return "At least one adult is required.";
             }
 
+            // Convert dates
+            String formattedCheckIn =
+                    convertDate(checkInDate);
+
+            String formattedCheckOut =
+                    convertDate(checkOutDate);
+
+            LocalDate checkIn = LocalDate.parse(
+                    formattedCheckIn, API_FORMAT);
+
+            LocalDate checkOut = LocalDate.parse(
+                    formattedCheckOut, API_FORMAT);
+
+            // Validate date range
+            if (!checkOut.isAfter(checkIn)) {
+                return "Check-out date must be after check-in date.";
+            }
+
+            // Validate past dates
+            if (checkIn.isBefore(LocalDate.now())) {
+                return "Check-in date cannot be in the past.";
+            }
+
+            // Calculate number of nights
+            long nights = java.time.temporal.ChronoUnit.DAYS
+                    .between(checkIn, checkOut);
+
+            logger.info(
+                    "Hotel stay duration: {} nights",
+                    nights);
+
+            // Build SerpAPI request
             String url = UriComponentsBuilder
                     .fromUriString(apiUrl)
                     .queryParam("engine", "google_hotels")
-                    .queryParam("q", location)
-                    .queryParam("check_in_date", convertDate(checkInDate))
-                    .queryParam("check_out_date", convertDate(checkOutDate))
+                    .queryParam("q", location.trim())
+                    .queryParam("check_in_date", formattedCheckIn)
+                    .queryParam("check_out_date", formattedCheckOut)
                     .queryParam("adults", adults)
                     .queryParam("currency", "INR")
                     .queryParam("gl", "in")
@@ -94,31 +166,66 @@ public class HotelTools {
                     .encode()
                     .toUriString();
 
+            logger.info("Sending hotel search request to SerpAPI.");
+
+            // Execute API request
             JsonNode response = restTemplate.getForObject(
                     url, JsonNode.class);
 
             if (response == null) {
+
+                logger.warn("Hotel API returned an empty response.");
+
                 return "No response received from hotel API.";
             }
 
+            // Check API error
             if (response.has("error")) {
-                return "Hotel API error: "
-                        + response.path("error").asText();
+
+                String error = response.path("error").asText();
+
+                logger.error("Hotel API error: {}", error);
+
+                return "Hotel API error: " + error;
             }
 
+            // Check search metadata
+            JsonNode metadata = response.path("search_metadata");
+
+            String status = metadata.path("status").asText("");
+
+            if ("Error".equalsIgnoreCase(status)) {
+
+                String error = response.path("error")
+                        .asText("Unknown hotel search error.");
+
+                logger.error("Hotel search failed: {}", error);
+
+                return "Hotel search failed: " + error;
+            }
+
+            // Extract hotel properties
             JsonNode properties = response.path("properties");
 
             if (!properties.isArray() || properties.isEmpty()) {
+
+                logger.warn(
+                        "No hotel results found for location: {}",
+                        location);
+
                 return "No hotel results found for "
-                        + location + " for the selected dates.";
+                        + location
+                        + " for the selected dates.";
             }
 
+            // Build results
             StringBuilder result = new StringBuilder();
 
             result.append("HOTEL SEARCH RESULTS")
                     .append("\nLocation: ").append(location)
                     .append("\nCheck-in: ").append(checkInDate)
                     .append("\nCheck-out: ").append(checkOutDate)
+                    .append("\nNumber of nights: ").append(nights)
                     .append("\nAdults: ").append(adults)
                     .append("\n\n");
 
@@ -126,7 +233,8 @@ public class HotelTools {
 
             for (JsonNode hotel : properties) {
 
-                String name = hotel.path("name").asText("N/A");
+                String name = hotel.path("name")
+                        .asText("N/A");
 
                 String address = hotel.path("address")
                         .asText("N/A");
@@ -137,20 +245,29 @@ public class HotelTools {
                 String propertyToken = hotel.path("property_token")
                         .asText("N/A");
 
+                // Extract prices
                 JsonNode nightlyRate = hotel.path("rate_per_night");
+
                 JsonNode totalRate = hotel.path("total_rate");
 
                 String pricePerNight = getPrice(nightlyRate);
+
                 String totalPrice = getPrice(totalRate);
 
-                result.append("Hotel ").append(count++)
+                result.append("HOTEL ").append(count++)
                         .append("\nName: ").append(name)
                         .append("\nAddress: ").append(address)
                         .append("\nRating: ").append(rating)
                         .append("\nPrice per night: ").append(pricePerNight)
-                        .append("\nTotal stay price: ").append(totalPrice)
-                        .append("\nProperty Token: ").append(propertyToken);
+                        .append("\nTotal stay price: ").append(totalPrice);
 
+                // Property token
+                if (!"N/A".equals(propertyToken)) {
+                    result.append("\nProperty Token: ")
+                            .append(propertyToken);
+                }
+
+                // Booking options
                 JsonNode prices = hotel.path("prices");
 
                 if (prices.isArray() && !prices.isEmpty()) {
@@ -159,52 +276,100 @@ public class HotelTools {
 
                     for (JsonNode option : prices) {
 
+                        String provider = option.path("source")
+                                .asText("N/A");
+
+                        String bookingPrice = getPrice(
+                                option.path("total_rate"));
+
+                        String bookingLink = option.path("link")
+                                .asText("");
+
                         result.append("\n- Provider: ")
-                                .append(option.path("source").asText("N/A"));
+                                .append(provider);
 
                         result.append(", Price: ")
-                                .append(getPrice(option.path("total_rate")));
+                                .append(bookingPrice);
 
-                        result.append(", Booking Link: ")
-                                .append(option.path("link").asText("N/A"));
+                        if (!bookingLink.isBlank()) {
+                            result.append(", Booking Link: ")
+                                    .append(bookingLink);
+                        }
                     }
                 }
 
+                // Amenities
                 JsonNode amenities = hotel.path("amenities");
 
                 if (amenities.isArray() && !amenities.isEmpty()) {
 
-                    result.append("\nAmenities: ");
+                    result.append("\nAmenities:");
 
                     for (JsonNode amenity : amenities) {
-                        result.append(amenity.asText()).append(", ");
+
+                        if (amenity != null && !amenity.isNull()) {
+                            result.append("\n- ")
+                                    .append(amenity.asText());
+                        }
                     }
                 }
 
                 result.append("\n\n");
             }
 
+            logger.info(
+                    "Hotel search successful. Found {} properties for {}.",
+                    properties.size(), location);
+
             return result.toString();
 
+        } catch (HttpStatusCodeException e) {
+
+            logger.error(
+                    "Hotel API HTTP error. Status: {}, Response: {}",
+                    e.getStatusCode(),
+                    e.getResponseBodyAsString());
+
+            return "Hotel API request failed with HTTP status "
+                    + e.getStatusCode()
+                    + ". Please check your API key and request parameters.";
+
+        } catch (RestClientException e) {
+
+            logger.error("Hotel API connection error", e);
+
+            return "Unable to connect to the hotel API. "
+                    + "Please check your internet connection or API availability.";
+
         } catch (Exception e) {
+
+            logger.error("Unexpected hotel search error", e);
+
             return "Unable to search hotels: " + e.getMessage();
         }
     }
 
+    // Extract hotel price
     private String getPrice(JsonNode rate) {
 
         if (rate == null || rate.isMissingNode() || rate.isNull()) {
             return "Price unavailable";
         }
 
+        // Prefer lowest price
         String price = rate.path("lowest").asText("");
 
         if (!price.isBlank()) {
             return price;
         }
 
+        // Fallback to display price
         price = rate.path("display_price").asText("");
 
-        return price.isBlank() ? "Price unavailable" : price;
+        if (!price.isBlank()) {
+            return price;
+        }
+
+        return "Price unavailable";
     }
 }

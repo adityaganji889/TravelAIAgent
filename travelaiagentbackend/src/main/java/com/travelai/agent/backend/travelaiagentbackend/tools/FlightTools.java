@@ -111,6 +111,7 @@ public class FlightTools {
     }
 
     // Flight Search
+    @SuppressWarnings("deprecation")
     @Tool(
         name = "searchFlight",
         description = """
@@ -208,6 +209,7 @@ public class FlightTools {
             // Check API error
             if (response.has("error")) {
 
+                @SuppressWarnings("deprecation")
                 String error = response.path("error").asText();
 
                 logger.error("Flight API error: {}", error);
@@ -282,6 +284,7 @@ public class FlightTools {
                 // Price handling
                 JsonNode priceNode = flight.path("price");
 
+                @SuppressWarnings("deprecation")
                 String price = priceNode.isMissingNode()
                         || priceNode.isNull()
                         ? "Price unavailable"
@@ -374,6 +377,7 @@ public class FlightTools {
     }
 
     // Flight Status
+    @SuppressWarnings("deprecation")
     @Tool(
         name = "checkFlightStatus",
         description = """
@@ -418,6 +422,7 @@ public class FlightTools {
 
             if (response.has("error")) {
 
+                @SuppressWarnings("deprecation")
                 String error = response.path("error").asText();
 
                 logger.error("Flight status API error: {}", error);

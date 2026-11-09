@@ -70,7 +70,8 @@ public class HotelTools {
     }
 
     // Search Hotels
-    @Tool(
+    @SuppressWarnings("deprecation")
+@Tool(
         name = "searchHotels",
         description = """
             Search available hotels and room rates using SerpAPI Google Hotels.
@@ -182,6 +183,7 @@ public class HotelTools {
             // Check API error
             if (response.has("error")) {
 
+                @SuppressWarnings("deprecation")
                 String error = response.path("error").asText();
 
                 logger.error("Hotel API error: {}", error);
@@ -192,10 +194,12 @@ public class HotelTools {
             // Check search metadata
             JsonNode metadata = response.path("search_metadata");
 
+            @SuppressWarnings("deprecation")
             String status = metadata.path("status").asText("");
 
             if ("Error".equalsIgnoreCase(status)) {
 
+                @SuppressWarnings("deprecation")
                 String error = response.path("error")
                         .asText("Unknown hotel search error.");
 
@@ -233,15 +237,19 @@ public class HotelTools {
 
             for (JsonNode hotel : properties) {
 
+                @SuppressWarnings("deprecation")
                 String name = hotel.path("name")
                         .asText("N/A");
 
+                @SuppressWarnings("deprecation")
                 String address = hotel.path("address")
                         .asText("N/A");
 
+                @SuppressWarnings("deprecation")
                 String rating = hotel.path("overall_rating")
                         .asText("N/A");
 
+                @SuppressWarnings("deprecation")
                 String propertyToken = hotel.path("property_token")
                         .asText("N/A");
 
@@ -276,12 +284,14 @@ public class HotelTools {
 
                     for (JsonNode option : prices) {
 
+                        @SuppressWarnings("deprecation")
                         String provider = option.path("source")
                                 .asText("N/A");
 
                         String bookingPrice = getPrice(
                                 option.path("total_rate"));
 
+                        @SuppressWarnings("deprecation")
                         String bookingLink = option.path("link")
                                 .asText("");
 
@@ -350,13 +360,15 @@ public class HotelTools {
     }
 
     // Extract hotel price
-    private String getPrice(JsonNode rate) {
+    @SuppressWarnings("deprecation")
+private String getPrice(JsonNode rate) {
 
         if (rate == null || rate.isMissingNode() || rate.isNull()) {
             return "Price unavailable";
         }
 
         // Prefer lowest price
+        @SuppressWarnings("deprecation")
         String price = rate.path("lowest").asText("");
 
         if (!price.isBlank()) {

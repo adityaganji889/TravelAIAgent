@@ -1,5 +1,7 @@
 package com.travelai.agent.backend.travelaiagentbackend.config;
 
+import java.time.Duration;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -14,8 +16,8 @@ public class HttpClientConfig {
         SimpleClientHttpRequestFactory factory =
                 new SimpleClientHttpRequestFactory();
 
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(15000);
+        factory.setConnectTimeout(Duration.ofSeconds(120));
+        factory.setReadTimeout(Duration.ofSeconds(300));
 
         return new RestTemplate(factory);
     }

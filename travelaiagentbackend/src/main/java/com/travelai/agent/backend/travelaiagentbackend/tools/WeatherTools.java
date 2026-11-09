@@ -123,9 +123,11 @@ public class WeatherTools {
 
             for (JsonNode item : organicResults) {
 
+                @SuppressWarnings("deprecation")
                 String title = item.path("title")
                         .asText("");
 
+                @SuppressWarnings("deprecation")
                 String snippet = item.path("snippet")
                         .asText("");
 
@@ -215,6 +217,7 @@ public class WeatherTools {
             // Check API error
             if (response.has("error")) {
 
+                @SuppressWarnings("deprecation")
                 String error = response.path("error").asText();
 
                 logger.error(
@@ -351,6 +354,7 @@ public class WeatherTools {
             // Check API error
             if (response.has("error")) {
 
+                @SuppressWarnings("deprecation")
                 String error = response.path("error").asText();
 
                 logger.error(

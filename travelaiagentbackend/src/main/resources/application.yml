@@ -1,5 +1,5 @@
 server:
-    port: 8081
+    port: ${PORT:8081}
 
 spring:
     application:
@@ -9,9 +9,12 @@ spring:
             api-key: ${OPENAI_API_KEY:default-key} 
             chat:
                 model: ${CHAT_MODEL:gpt-4o-mini}
+    mvc:
+        async:
+             request-timeout: -1 #disabling request timeout
 
 app:
     serpapi:
         api:
             url: https://serpapi.com/search.json
-            key: ${SERPAPI_API_KEY:}
+            key: ${SERPAPI_API_KEY:default-key}

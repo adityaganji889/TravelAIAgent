@@ -85,7 +85,7 @@ flowchart TD
 ```
 ## Deployed Version:
 
-🧳<a href="https://travelaiagent-2dn7.onrender.com/" target="_blank">
+🧳 <a href="https://travelaiagent-2dn7.onrender.com/">
    Travel AI Agent
 </a>
 
